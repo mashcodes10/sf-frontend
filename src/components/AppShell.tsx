@@ -40,13 +40,15 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b border-hairline bg-card/95 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-5xl items-center gap-6 px-4">
+      {/* Floating glass island instead of a full-width bar: the nav hovers
+          over the page with a soft blur, so content reads edge to edge. */}
+      <header className="sticky top-0 z-40 px-4 pt-3">
+        <div className="mx-auto flex h-12 max-w-5xl items-center gap-8 rounded-2xl border border-hairline/70 bg-card/70 px-5 shadow-lg shadow-black/10 backdrop-blur-xl">
           <Link href="/contacts" className="flex items-center gap-2">
             <Wordmark />
           </Link>
 
-          <nav className="flex items-center gap-1 text-sm">
+          <nav className="flex items-center gap-5 text-sm">
             {NAV_LINKS.map((link) => {
               const active = link.match(currentPath);
 
@@ -55,10 +57,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
                   key={link.href}
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  className={`rounded-md px-2.5 py-1.5 transition-colors ${
+                  className={`relative py-1 transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-left after:rounded-full after:bg-primary motion-safe:after:transition-transform motion-safe:after:duration-200 ${
                     active
-                      ? "bg-secondary text-foreground"
-                      : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                      ? "text-foreground after:scale-x-100"
+                      : "text-muted-foreground after:scale-x-0 hover:text-foreground hover:after:scale-x-100"
                   }`}
                 >
                   {link.label}
