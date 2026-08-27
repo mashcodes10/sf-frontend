@@ -48,12 +48,15 @@ The landing route (`/` redirects here). What to check, top to bottom:
   selector. Both write to the URL, so the state survives a reload and is
   shareable.
 - **Table** — sortable `Name` and `Email` headers (the arrow shows the active
-  column and direction), an initials avatar per row, `Job title at Company` as
-  the subtitle, and per-row pencil (edit) and trash (delete) actions.
-- **Footer row** — `Showing 1–3 of 3` with Previous/Next, both disabled on a
+  column and direction), a circular photo avatar per row (initials when no
+  photo is set), `Job title at Company` as the subtitle, and per-row pencil
+  (edit) and trash (delete) actions.
+- **Footer row** — `Showing 1–N of N` with Previous/Next, both disabled on a
   single page.
-- **Version stamp** — `web v0.1.0 (build 2 · 8ce2dc0)` at the bottom of every
-  page, so you always know which build you are looking at.
+- **Version stamp** — `web v<version> (build <n> · <sha>)` at the bottom of
+  every page, so you always know which build you are looking at. The exact
+  numbers depend on your checkout, so don't expect them to match the
+  screenshots.
 
 The seed data above (Grace Hopper, Ada Lovelace, Alan Turing) is whatever your
 backend was seeded with — your names and IDs will differ, and an empty table
