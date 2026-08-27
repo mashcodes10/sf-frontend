@@ -122,7 +122,9 @@ export function apiErrorMessage(error: ApiError, fallback: string): string {
 
 /**
  * Turn a 422 `HTTPValidationError` into per-field messages. FastAPI reports the
- * location as `["body", "<field>"]`, so the second element is the input name.
+ * location as `["body", "<field>", ...]`; a nested address failure looks like
+ * `["body", "addresses", 0, "city"]` and is folded onto the `addresses` key —
+ * the only error slot the address widget renders — with the row spelled out.
  */
 export function toFieldErrors(
   error: ApiError,
@@ -132,8 +134,18 @@ export function toFieldErrors(
 
   const fieldErrors: Partial<Record<keyof ContactInput, string>> = {};
   for (const issue of detail) {
-    const field = issue.loc?.[issue.loc.length - 1];
-    if (typeof field === "string" && field !== "body") {
+    const loc = issue.loc ?? [];
+    const path = loc[0] === "body" ? loc.slice(1) : loc;
+    const [field, index, member] = path;
+    if (typeof field !== "string") continue;
+
+    if (field === "addresses") {
+      const where =
+        typeof index === "number" ? `Address ${index + 1}` : "Addresses";
+      const label =
+        typeof member === "string" ? ` ${member.replace(/_/g, " ")}` : "";
+      fieldErrors.addresses ??= `${where}${label}: ${issue.msg}`;
+    } else {
       fieldErrors[field as keyof ContactInput] ??= issue.msg;
     }
   }
