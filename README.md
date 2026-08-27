@@ -3,10 +3,10 @@
 Front end for the [Contacts API](http://127.0.0.1:8000/docs) — browse, search, sort,
 page through, create, edit, and delete contacts.
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS · Zod · Jest + Testing Library
-+ MSW · Playwright.
+Next.js 16 (App Router) · TypeScript · Tailwind CSS · Zod · Jest ·
+Testing Library · MSW · Playwright.
 
-![SF Contacts in action — photo avatars, live search, and typed addresses](docs/demo.gif)
+![SF Contacts in action — photo avatars, live search, and typed addresses](docs/walkthrough.gif)
 
 Contacts carry a photo (circular avatar with initials fallback), any number of
 typed addresses (Home / Work / Other, grouped on the detail page), and can be
@@ -33,7 +33,7 @@ are all wired up correctly and you can start building.
 
 ### `/contacts` — the list
 
-![The contacts list page](docs/UI.png)
+![The contacts list page](docs/contacts-list.png)
 
 The landing route (`/` redirects here). What to check, top to bottom:
 
@@ -64,7 +64,7 @@ just means an empty database, not a broken app.
 
 ### `/contacts/[id]` — a single contact
 
-![A single contact's detail page](docs/contact.png)
+![A single contact's detail page](docs/contact-detail.png)
 
 Click a row to get here. It confirms the detail read path works end to end:
 
