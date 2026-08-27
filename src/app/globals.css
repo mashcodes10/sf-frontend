@@ -116,6 +116,109 @@
 }
 
 @layer utilities {
+  /* ---- Motion ------------------------------------------------------------
+     One easing (an ease-out-expo feel), three entrances, and a shimmer.
+     Everything degrades to static under prefers-reduced-motion. */
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  .animate-fade-up {
+    animation: fade-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Direct children reveal one after another — used for table rows and the
+     detail-page cards. Delays cap at the 12th child so a 200-row page does
+     not wait seconds for its tail. */
+  .stagger-children > * {
+    animation: fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .stagger-children > *:nth-child(1) { animation-delay: 0.02s; }
+  .stagger-children > *:nth-child(2) { animation-delay: 0.05s; }
+  .stagger-children > *:nth-child(3) { animation-delay: 0.08s; }
+  .stagger-children > *:nth-child(4) { animation-delay: 0.11s; }
+  .stagger-children > *:nth-child(5) { animation-delay: 0.14s; }
+  .stagger-children > *:nth-child(6) { animation-delay: 0.17s; }
+  .stagger-children > *:nth-child(7) { animation-delay: 0.2s; }
+  .stagger-children > *:nth-child(8) { animation-delay: 0.23s; }
+  .stagger-children > *:nth-child(9) { animation-delay: 0.26s; }
+  .stagger-children > *:nth-child(10) { animation-delay: 0.29s; }
+  .stagger-children > *:nth-child(11) { animation-delay: 0.32s; }
+  .stagger-children > *:nth-child(n + 12) { animation-delay: 0.35s; }
+
+  /* Loading skeletons: a moving sheen instead of a flat pulse. */
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--secondary)) 25%,
+      rgb(var(--muted)) 50%,
+      rgb(var(--secondary)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+
+  /* Cards that lead somewhere lift slightly under the pointer. */
+  .hover-lift {
+    transition:
+      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px -12px rgb(0 0 0 / 0.5);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-up,
+    .animate-scale-in,
+    .stagger-children > * {
+      animation: none;
+    }
+    .skeleton-shimmer {
+      animation: none;
+      background: rgb(var(--secondary));
+    }
+    .hover-lift,
+    .hover-lift:hover {
+      transform: none;
+      transition: none;
+    }
+  }
+
   /* Scrollable panes: always show the gutter so it is obvious the list scrolls,
      with a themed thumb instead of the OS overlay scrollbar. */
   .scroll-list {

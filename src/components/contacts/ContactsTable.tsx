@@ -17,7 +17,7 @@ export default function ContactsTable({
   query: ContactListQuery;
 }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-border bg-card">
+    <div className="animate-scale-in overflow-x-auto rounded-lg border border-border bg-card shadow-sm">
       <table className="w-full border-collapse text-sm">
         <caption className="sr-only">
           Contacts, sorted by {query.sortBy.replace("_", " ")} {query.order}
@@ -41,18 +41,20 @@ export default function ContactsTable({
           </tr>
         </thead>
 
-        <tbody>
+        <tbody className="stagger-children">
           {contacts.map((contact) => {
             const subtitle = jobLine(contact);
 
             return (
               <tr
                 key={contact.id}
-                className="border-b border-hairline last:border-b-0 transition-colors hover:bg-secondary/30"
+                className="group border-b border-hairline last:border-b-0 transition-colors hover:bg-secondary/30"
               >
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-3">
-                    <ContactAvatar contact={contact} size="sm" />
+                    <span className="transition-transform duration-200 group-hover:scale-110">
+                      <ContactAvatar contact={contact} size="sm" />
+                    </span>
                     <div className="min-w-0">
                       <Link
                         href={`/contacts/${contact.id}`}

@@ -20,10 +20,14 @@ export default function ApiStatusBadge({
           : "The Contacts API did not respond to its health check"
       }
     >
-      <span
-        aria-hidden="true"
-        className={`h-1.5 w-1.5 rounded-full ${ok ? "bg-success" : "bg-destructive"}`}
-      />
+      <span aria-hidden="true" className="relative flex h-1.5 w-1.5">
+        {ok ? (
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-50 motion-reduce:hidden" />
+        ) : null}
+        <span
+          className={`relative inline-flex h-1.5 w-1.5 rounded-full ${ok ? "bg-success" : "bg-destructive"}`}
+        />
+      </span>
       <span className="font-mono">
         {ok ? `api ok · ${health?.database}` : "api unreachable"}
       </span>

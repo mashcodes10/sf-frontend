@@ -40,7 +40,7 @@ export default async function ContactsPage({
   const error: Error | null = outcome instanceof Error ? outcome : null;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+    <div className="mx-auto max-w-5xl animate-fade-up space-y-6 px-4 py-8">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">

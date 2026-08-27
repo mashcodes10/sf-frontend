@@ -46,7 +46,7 @@ export default async function ContactDetailPage({ params }: PageProps) {
   const subtitle = jobLine(contact);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+    <div className="mx-auto max-w-3xl animate-fade-up space-y-6 px-4 py-8">
       <Link
         href="/contacts"
         className="inline-flex items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground"
@@ -57,7 +57,9 @@ export default async function ContactDetailPage({ params }: PageProps) {
 
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <ContactAvatar contact={contact} size="lg" />
+          <span className="animate-scale-in">
+            <ContactAvatar contact={contact} size="lg" />
+          </span>
           <div>
             <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
               {contact.full_name}
