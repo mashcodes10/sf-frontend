@@ -27,7 +27,7 @@ export default async function EditContactPage({ params }: PageProps) {
   if (!contact) notFound();
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+    <div className="mx-auto max-w-3xl animate-fade-up space-y-6 px-4 py-8">
       <div>
         <Link
           href={`/contacts/${contact.id}`}

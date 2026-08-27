@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { ApiError, apiFetch, apiJson } from "@/lib/apiClient";
 import type {
   Contact,
@@ -42,8 +43,13 @@ export async function listContacts(
   });
 }
 
-/** Fetch one contact, or `null` when the API reports 404. */
-export async function getContact(id: number): Promise<Contact | null> {
+/**
+ * Fetch one contact, or `null` when the API reports 404.
+ *
+ * Wrapped in React's `cache()` so `generateMetadata` and the page body share
+ * one request per render instead of firing two identical concurrent calls.
+ */
+export const getContact = cache(async (id: number): Promise<Contact | null> => {
   try {
     return await apiJson<Contact>(`${CONTACTS_PATH}/${id}`, {
       cache: "no-store",
@@ -52,7 +58,7 @@ export async function getContact(id: number): Promise<Contact | null> {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
   }
-}
+});
 
 export async function createContact(input: ContactInput): Promise<Contact> {
   return apiJson<Contact>(CONTACTS_PATH, {

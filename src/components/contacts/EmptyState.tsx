@@ -14,12 +14,14 @@ export default function EmptyState({
   const Icon = filtered ? SearchX : Users;
 
   return (
-    <div className="rounded-lg border border-dashed border-border bg-card/50 px-6 py-16 text-center">
-      <Icon
-        className="mx-auto h-8 w-8 text-muted-foreground"
-        strokeWidth={1.5}
-        aria-hidden="true"
-      />
+    <div className="animate-scale-in rounded-lg border border-dashed border-border bg-card/50 px-6 py-16 text-center">
+      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-secondary/60">
+        <Icon
+          className="h-7 w-7 text-muted-foreground"
+          strokeWidth={1.5}
+          aria-hidden="true"
+        />
+      </span>
       <h2 className="mt-4 font-display text-base font-semibold text-foreground">
         {filtered ? "No matching contacts" : "No contacts yet"}
       </h2>
