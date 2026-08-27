@@ -46,15 +46,26 @@ async function fileToDataUrl(file: File): Promise<string> {
 export default function PhotoField({
   defaultValue,
   error,
+  onBusyChange,
 }: {
   defaultValue?: string;
   error?: string;
+  /** Reports whether a conversion is in flight, so Save can wait for it. */
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const [photo, setPhoto] = useState(defaultValue ?? "");
   const [localError, setLocalError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Bumped on every selection or removal; a conversion only commits its
+  // result if it is still the current generation, so a slow decode can never
+  // overwrite a newer choice or resurrect a removed photo.
+  const generationRef = useRef(0);
 
   const message = localError ?? error;
+
+  function setBusy(busy: boolean) {
+    onBusyChange?.(busy);
+  }
 
   async function handleFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -70,15 +81,24 @@ export default function PhotoField({
       return;
     }
 
+    const generation = ++generationRef.current;
+    setBusy(true);
     try {
-      setPhoto(await fileToDataUrl(file));
+      const dataUrl = await fileToDataUrl(file);
+      if (generation !== generationRef.current) return; // superseded
+      setPhoto(dataUrl);
       setLocalError(null);
     } catch {
+      if (generation !== generationRef.current) return;
       setLocalError("That image could not be read. Try a different file.");
+    } finally {
+      if (generation === generationRef.current) setBusy(false);
     }
   }
 
   function removePhoto() {
+    generationRef.current += 1; // invalidate any in-flight conversion
+    setBusy(false);
     setPhoto("");
     setLocalError(null);
   }

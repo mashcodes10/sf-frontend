@@ -60,11 +60,28 @@ describe("contactInputSchema", () => {
     expect(contactInputSchema.parse(values()).photo).toBeNull();
   });
 
+  it("enforces the API's 1 MiB decoded cap exactly", () => {
+    // 1,048,576 bytes = 349,525 full quanta + one "AA==" terminal quantum.
+    const atLimit = `data:image/png;base64,${"A".repeat(1_398_100)}AA==`;
+    // One byte more changes the terminal quantum to "AAA=".
+    const overLimit = `data:image/png;base64,${"A".repeat(1_398_100)}AAA=`;
+
+    expect(contactInputSchema.parse(values({ photo: atLimit })).photo).toBe(
+      atLimit,
+    );
+    const result = contactInputSchema.safeParse(values({ photo: overLimit }));
+    expect(zodFieldErrors(result.error!).photo).toBe(
+      "Photo must be 1 MB or smaller",
+    );
+  });
+
   it("rejects a photo that is not an inline image", () => {
     for (const bad of [
       "https://example.com/ada.png",
       "data:text/html;base64,PGI+aGk8L2I+",
       "data:image/svg+xml;base64,PHN2Zy8+",
+      "data:image/png;base64,A", // impossible base64 quantum
+      "data:image/png;base64,abcd=", // invalid padding placement
     ]) {
       const result = contactInputSchema.safeParse(values({ photo: bad }));
       expect(zodFieldErrors(result.error!).photo).toBe(
