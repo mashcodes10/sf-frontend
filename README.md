@@ -3,8 +3,8 @@
 Front end for the [Contacts API](http://127.0.0.1:8000/docs) — browse, search, sort,
 page through, create, edit, and delete contacts.
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS · Zod · Jest + Testing Library
-+ MSW · Playwright.
+Next.js 16 (App Router) · TypeScript · Tailwind CSS · Zod · Jest ·
+Testing Library · MSW · Playwright.
 
 ![SF Contacts in action — photo avatars, live search, and typed addresses](docs/demo.gif)
 
