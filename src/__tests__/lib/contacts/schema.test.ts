@@ -19,9 +19,13 @@ function values(overrides: Record<string, string> = {}) {
     postal_code: "",
     country: "",
     notes: "",
+    photo: "",
     ...overrides,
   };
 }
+
+const PHOTO =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 
 describe("contactInputSchema", () => {
   it("lowercases the email and nulls out the blanks", () => {
@@ -49,6 +53,41 @@ describe("contactInputSchema", () => {
       last_name: "Last name is required",
       email: "Email is required",
     });
+  });
+
+  it("accepts an image data URL as the photo and nulls out a blank one", () => {
+    expect(contactInputSchema.parse(values({ photo: PHOTO })).photo).toBe(PHOTO);
+    expect(contactInputSchema.parse(values()).photo).toBeNull();
+  });
+
+  it("enforces the API's 1 MiB decoded cap exactly", () => {
+    // 1,048,576 bytes = 349,525 full quanta + one "AA==" terminal quantum.
+    const atLimit = `data:image/png;base64,${"A".repeat(1_398_100)}AA==`;
+    // One byte more changes the terminal quantum to "AAA=".
+    const overLimit = `data:image/png;base64,${"A".repeat(1_398_100)}AAA=`;
+
+    expect(contactInputSchema.parse(values({ photo: atLimit })).photo).toBe(
+      atLimit,
+    );
+    const result = contactInputSchema.safeParse(values({ photo: overLimit }));
+    expect(zodFieldErrors(result.error!).photo).toBe(
+      "Photo must be 1 MB or smaller",
+    );
+  });
+
+  it("rejects a photo that is not an inline image", () => {
+    for (const bad of [
+      "https://example.com/ada.png",
+      "data:text/html;base64,PGI+aGk8L2I+",
+      "data:image/svg+xml;base64,PHN2Zy8+",
+      "data:image/png;base64,A", // impossible base64 quantum
+      "data:image/png;base64,abcd=", // invalid padding placement
+    ]) {
+      const result = contactInputSchema.safeParse(values({ photo: bad }));
+      expect(zodFieldErrors(result.error!).photo).toBe(
+        "Photo must be a PNG, JPEG, GIF, or WebP image",
+      );
+    }
   });
 
   it("rejects a malformed email", () => {
@@ -80,7 +119,7 @@ describe("formDataToValues", () => {
     expect(extracted.first_name).toBe("Grace");
     expect(extracted.last_name).toBe("");
     expect(Object.keys(extracted).sort()).toEqual(
-      CONTACT_FIELDS.map((field) => field.name).sort(),
+      [...CONTACT_FIELDS.map((field) => field.name), "photo"].sort(),
     );
   });
 });

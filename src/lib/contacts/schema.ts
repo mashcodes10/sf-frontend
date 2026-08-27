@@ -20,6 +20,26 @@ function optionalText(max: number, label: string) {
     .default(null);
 }
 
+/**
+ * Photo rules, mirroring the API: an inline base64 `data:image/...` URL of one
+ * of the types we render, decoding to at most 1 MiB. The regex enforces real
+ * base64 shape (four-character quanta, padding only at the end), so the byte
+ * arithmetic below is exact.
+ */
+const PHOTO_DATA_URL_RE =
+  /^data:image\/(png|jpeg|gif|webp);base64,(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/;
+/** 1 MiB decoded — the API's cap. */
+export const PHOTO_MAX_BYTES = 1_048_576;
+/** Coarse fast-fail bound on the whole data URL before any parsing. */
+export const PHOTO_MAX_ENCODED_LENGTH = 1_400_000;
+
+/** Exact decoded size of a data URL's base64 payload (regex-validated). */
+function photoDecodedBytes(value: string): number {
+  const data = value.slice(value.indexOf(",") + 1);
+  const padding = data.endsWith("==") ? 2 : data.endsWith("=") ? 1 : 0;
+  return (data.length / 4) * 3 - padding;
+}
+
 function requiredText(max: number, label: string) {
   return z
     .string()
@@ -49,6 +69,24 @@ export const contactInputSchema = z.object({
   notes: z
     .string()
     .trim()
+    .transform((value) => value || null)
+    .nullable()
+    .default(null),
+  photo: z
+    .string()
+    .trim()
+    .max(PHOTO_MAX_ENCODED_LENGTH, "Photo must be 1 MB or smaller")
+    .refine(
+      (value) => value === "" || PHOTO_DATA_URL_RE.test(value),
+      "Photo must be a PNG, JPEG, GIF, or WebP image",
+    )
+    .refine(
+      (value) =>
+        value === "" ||
+        !PHOTO_DATA_URL_RE.test(value) || // already rejected above
+        photoDecodedBytes(value) <= PHOTO_MAX_BYTES,
+      "Photo must be 1 MB or smaller",
+    )
     .transform((value) => value || null)
     .nullable()
     .default(null),
@@ -214,14 +252,20 @@ export const CONTACT_FIELDS: ContactFieldSpec[] = CONTACT_FIELD_GROUPS.flatMap(
   (group) => group.fields,
 );
 
+/**
+ * Every input the form submits: the metadata-driven text fields plus the
+ * photo, which has its own upload widget instead of a `ContactFieldSpec`.
+ */
+const FORM_VALUE_NAMES: (keyof ContactInput)[] = [
+  ...CONTACT_FIELDS.map((field) => field.name),
+  "photo",
+];
+
 /** Pull the contact fields out of a submitted form, as raw strings. */
 export function formDataToValues(
   formData: FormData,
 ): Record<keyof ContactInput, string> {
   return Object.fromEntries(
-    CONTACT_FIELDS.map((field) => [
-      field.name,
-      String(formData.get(field.name) ?? ""),
-    ]),
+    FORM_VALUE_NAMES.map((name) => [name, String(formData.get(name) ?? "")]),
   ) as Record<keyof ContactInput, string>;
 }
