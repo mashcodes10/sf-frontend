@@ -52,7 +52,7 @@ export default function ContactsTable({
               >
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-3">
-                    <span className="transition-transform duration-200 group-hover:scale-110">
+                    <span className="motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-110">
                       <ContactAvatar contact={contact} size="sm" />
                     </span>
                     <div className="min-w-0">
