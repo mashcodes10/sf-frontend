@@ -6,6 +6,12 @@ page through, create, edit, and delete contacts.
 Next.js 16 (App Router) · TypeScript · Tailwind CSS · Zod · Jest + Testing Library
 + MSW · Playwright.
 
+![SF Contacts in action — photo avatars, live search, and typed addresses](docs/demo.gif)
+
+Contacts carry a photo (circular avatar with initials fallback), any number of
+typed addresses (Home / Work / Other, grouped on the detail page), and can be
+exported as a vCard (.vcf) straight into Apple or Google Contacts.
+
 ## Getting started
 
 ```bash
