@@ -5,7 +5,7 @@ import {
   zodFieldErrors,
 } from "@/lib/contacts/schema";
 
-function values(overrides: Record<string, string> = {}) {
+function values(overrides: Record<string, unknown> = {}) {
   return {
     first_name: "Ada",
     last_name: "Lovelace",
@@ -13,13 +13,9 @@ function values(overrides: Record<string, string> = {}) {
     phone: "",
     company: "",
     job_title: "",
-    address: "",
-    city: "",
-    state: "",
-    postal_code: "",
-    country: "",
     notes: "",
     photo: "",
+    addresses: [] as Record<string, string>[],
     ...overrides,
   };
 }
@@ -97,13 +93,61 @@ describe("contactInputSchema", () => {
 
   it("enforces the API's length limits", () => {
     const result = contactInputSchema.safeParse(
-      values({ first_name: "a".repeat(101), postal_code: "9".repeat(21) }),
+      values({ first_name: "a".repeat(101), company: "c".repeat(201) }),
     );
 
     expect(zodFieldErrors(result.error!)).toEqual({
       first_name: "First name must be 100 characters or fewer",
-      postal_code: "Postal code must be 20 characters or fewer",
+      company: "Company must be 200 characters or fewer",
     });
+  });
+
+  it("keeps filled address rows, typed and trimmed", () => {
+    const parsed = contactInputSchema.parse(
+      values({
+        addresses: [
+          { type: "Work", address: " 500 Howard St ", city: "SF", state: "", postal_code: "", country: "" },
+        ],
+      }),
+    );
+
+    expect(parsed.addresses).toEqual([
+      {
+        type: "Work",
+        address: "500 Howard St",
+        city: "SF",
+        state: null,
+        postal_code: null,
+        country: null,
+      },
+    ]);
+  });
+
+  it("drops address rows the user added but never filled in", () => {
+    const parsed = contactInputSchema.parse(
+      values({
+        addresses: [
+          { type: "Home", address: "", city: "", state: "", postal_code: "", country: "" },
+        ],
+      }),
+    );
+
+    expect(parsed.addresses).toEqual([]);
+  });
+
+  it("rejects an unknown address type", () => {
+    const result = contactInputSchema.safeParse(
+      values({
+        addresses: [
+          { type: "Vacation", address: "1 Beach Rd", city: "", state: "", postal_code: "", country: "" },
+        ],
+      }),
+    );
+
+    expect(result.success).toBe(false);
+    expect(zodFieldErrors(result.error!).addresses).toBe(
+      "Pick Home, Work, or Other",
+    );
   });
 });
 
@@ -119,7 +163,24 @@ describe("formDataToValues", () => {
     expect(extracted.first_name).toBe("Grace");
     expect(extracted.last_name).toBe("");
     expect(Object.keys(extracted).sort()).toEqual(
-      [...CONTACT_FIELDS.map((field) => field.name), "photo"].sort(),
+      [...CONTACT_FIELDS.map((field) => field.name), "photo", "addresses"].sort(),
     );
+  });
+
+  it("collects indexed address rows, skipping gaps left by removed rows", () => {
+    const formData = new FormData();
+    formData.set("first_name", "Grace");
+    formData.set("addresses.0.type", "Home");
+    formData.set("addresses.0.city", "Arlington");
+    // Row 1 was removed in the UI; row 2 remains.
+    formData.set("addresses.2.type", "Work");
+    formData.set("addresses.2.city", "DC");
+
+    const extracted = formDataToValues(formData);
+
+    expect(extracted.addresses).toEqual([
+      { type: "Home", address: "", city: "Arlington", state: "", postal_code: "", country: "" },
+      { type: "Work", address: "", city: "DC", state: "", postal_code: "", country: "" },
+    ]);
   });
 });

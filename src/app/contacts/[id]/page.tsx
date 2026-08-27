@@ -8,6 +8,7 @@ import DeleteContactButton from "@/components/contacts/DeleteContactButton";
 import { buttonClasses } from "@/components/ui/Button";
 import { getContact } from "@/lib/contacts/api";
 import { addressLine, formatTimestamp, jobLine } from "@/lib/contacts/format";
+import { ADDRESS_TYPES } from "@/lib/contacts/types";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -43,7 +44,6 @@ export default async function ContactDetailPage({ params }: PageProps) {
   if (!contact) notFound();
 
   const subtitle = jobLine(contact);
-  const address = addressLine(contact);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
@@ -102,7 +102,31 @@ export default async function ContactDetailPage({ params }: PageProps) {
         </Row>
         <Row label="Company">{contact.company}</Row>
         <Row label="Job title">{contact.job_title}</Row>
-        <Row label="Address">{address}</Row>
+        {contact.addresses.length === 0 ? (
+          <Row label="Addresses">{null}</Row>
+        ) : (
+          // Grouped by type so all Home addresses read together, then Work, then Other.
+          ADDRESS_TYPES.map((type) => {
+            const ofType = contact.addresses.filter(
+              (address) => address.type === type,
+            );
+            if (ofType.length === 0) return null;
+
+            return (
+              <Row key={type} label={type}>
+                <ul className="space-y-1">
+                  {ofType.map((address) => (
+                    <li key={address.id}>
+                      {addressLine(address) ?? (
+                        <span className="text-muted-foreground/50">—</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </Row>
+            );
+          })
+        )}
         <Row label="Notes">
           {contact.notes ? (
             <span className="whitespace-pre-wrap">{contact.notes}</span>
